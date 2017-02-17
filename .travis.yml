@@ -53,3 +53,32 @@ script:
   - curl -X GET http://127.0.0.1:5981/_all_dbs
   - i=$(curl -X GET http://127.0.0.1:5981/_all_dbs | jq length); if [ $i -ne 38 ]; then exit 1; fi
   - python -m unittest discover tests
+
+before_deploy:
+  - CONFIG_FILE="./installer/BeLL-Apps-Installer.iss"
+  - TARGET_KEY="OutputBaseFilename"
+  - BASE_NAME="-setup"
+  - NEW_BELL_VER=`echo "$TRAVIS_TAG" | sed -nre 's/^[^0-9]*(([0-9]+\.)*[0-9]+).*/\1/p'`
+  - REPLACEMENT_VALUE=$(printf 'BellApp-%s-setup.exe' "$NEW_BELL_VER")
+
+  - sed -i "s/BELL_VERSION/$NEW_BELL_VER/g" "$CONFIG_FILE"
+  - sed -i "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/" $CONFIG_FILE
+ 
+  - sudo apt-get update
+  - sudo apt-get install -y -q innoextract wine python-software-properties
+  - wine --version 
+  - innoextract --version
+  - ./installer/innoinstall.sh
+  - wine "C:\Program Files\Inno Setup 5\ISCC.exe" "$CONFIG_FILE"
+
+  - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
+  - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
+deploy:
+  provider: releases
+  api_key:
+    secure: "DCK8OlUgVbAWZ7EwXCGiFPu0PVwCUobjMOlwJoyNmaJBxnLuzfeqnO7rBcG/6M/nTSTTzuJjqEmDOGxZI8J+Abg8W7h2Np71+GBav4RELECCJJoRsGnI37cfT87SKHLzRljPPKt1MFSDjrISa/izNTHPpj1WlnVpQHy6aPQElja1lX/tLisJbO99mAHyIHJPcimjQMPuTIXOtvkzxf+dN5RccfiuZzGWjLsaJK3MFnJNY13ZIsv82lV/vr1HpVCcCNKxCctb5LBZG6hqiR3qQtRljlaIqMWaTi15b0LMWNRFKrehv+GUaqT9pfy3W721EpzP6gxADawsUWDSPJ870atV89fX+5UZTxjK9wpNLFJTckdbAboIr5umg3y6JNJVbLgGLR6Ye3QZ/4qgOP0voFf4djkHC1tHmRIfXshvmgYt/Wvb1F6AmwMd5CR5k6+8uYO2TsQ4DEBHM7AUbUMOm6luXZGYYC+e1Smsr21zIeYotvMZzfMYmdRccDknf7zx/5oMsqtGKFp5030XU+oK1g0ibw2/ffrrczzTD5i8Kv9vwUNraV0FZI4WpCtwA1+s6xSZiDil0hJsVbLleaCB2jNIcXzo8kwJ88kAiHudI9Z6ff7PFVkAmJmuLiC0GpCX41c/XH9fHCconN3sIbtXvUMeVUKbQQmdg+yQN8AfSow="
+  file_glob: true
+  file: "${RELEASE_PKG_FILE}"
+  skip_cleanup: true
+  on:
+    tags: true

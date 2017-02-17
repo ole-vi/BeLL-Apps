@@ -1,0 +1,1 @@
+msiexec.exe /x {EBF9E075-7642-489B-B557-992F349CFB40} /passive
