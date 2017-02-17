@@ -47,6 +47,10 @@ before_install:
   - curl -X PUT 'http://127.0.0.1:5981/_config/httpd/allow_jsonp' -d '"true"'
   - curl -X PUT 'http://127.0.0.1:5981/_config/admins/nation' -d '"oleoleole"'
 
+  - sudo dpkg --add-architecture i386
+  - sudo apt-get update
+  - sudo apt-get install -y -q innoextract wine python-software-properties
+
 script:
   - export
   - docker ps -a | grep bell
@@ -64,13 +68,11 @@ before_deploy:
   - sed -i "s/BELL_VERSION/$NEW_BELL_VER/g" "$CONFIG_FILE"
   - sed -i "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/" $CONFIG_FILE
  
-  - sudo apt-get update
-  - sudo apt-get install -y -q innoextract wine python-software-properties
+
   - wine --version 
   - innoextract --version
   - ./installer/innoinstall.sh
   - wine "C:\Program Files\Inno Setup 5\ISCC.exe" "$CONFIG_FILE"
-
   - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
   - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
 deploy:
