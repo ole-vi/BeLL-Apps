@@ -71,7 +71,15 @@ before_deploy:
 
   - wine --version 
   - innoextract --version
-  - ./installer/innoinstall.sh
+  
+  - rm -rf /tmp/inno
+  - mkdir /tmp/inno
+  - cd /tmp/inno
+  - wget -O is.exe http://files.jrsoftware.org/is/5/isetup-5.5.5.exe
+  - innoextract is.exe
+  - mkdir -p ~/".wine/drive_c/inno"
+  - cp -a app/* ~/".wine/drive_c/inno"
+  
   - wine "C:\Program Files\Inno Setup 5\ISCC.exe" "$CONFIG_FILE"
   - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
   - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
