@@ -79,7 +79,7 @@ before_deploy:
   - mkdir -p ~/".wine/drive_c/inno"
   - cp -a app/* ~/".wine/drive_c/inno"
   
-  - wine "C:\inno\ISCC.exe" "$CONFIG_FILE"
+  - wine "C:\inno\ISCC.exe" $CONFIG_FILE
   - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
   - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
 deploy:
