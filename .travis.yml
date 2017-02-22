@@ -56,7 +56,6 @@ script:
   - docker ps -a | grep bell
   - curl -X GET http://127.0.0.1:5981/_all_dbs
   - i=$(curl -X GET http://127.0.0.1:5981/_all_dbs | jq length); if [ $i -ne 38 ]; then exit 1; fi
-  - python -m unittest discover tests
 
 before_deploy:
   - CONFIG_FILE="./installer/BeLL-Apps-Installer.iss"
@@ -80,7 +79,7 @@ before_deploy:
   - mkdir -p ~/".wine/drive_c/inno"
   - cp -a app/* ~/".wine/drive_c/inno"
   
-  - wine "C:\Program Files\Inno Setup 5\ISCC.exe" "$CONFIG_FILE"
+  - wine "C:\inno\ISCC.exe" "$CONFIG_FILE"
   - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
   - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
 deploy:
