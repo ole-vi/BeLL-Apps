@@ -63,7 +63,7 @@ before_deploy:
   - TARGET_KEY="OutputBaseFilename"
   - BASE_NAME="-setup"
   - NEW_BELL_VER=`echo "$TRAVIS_TAG" | sed -nre 's/^[^0-9]*(([0-9]+\.)*[0-9]+).*/\1/p'`
-  - REPLACEMENT_VALUE=$(printf 'BellApp-%s-setup.exe' "$NEW_BELL_VER")
+  - REPLACEMENT_VALUE=$(printf 'BellApp-%s-setup' "$NEW_BELL_VER")
 
   - sed -i "s/BELL_VERSION/$NEW_BELL_VER/g" "$CONFIG_FILE"
   - sed -i "s/\($TARGET_KEY *= *\).*/\1$REPLACEMENT_VALUE/" $CONFIG_FILE
