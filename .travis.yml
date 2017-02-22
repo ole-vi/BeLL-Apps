@@ -58,6 +58,7 @@ script:
   - i=$(curl -X GET http://127.0.0.1:5981/_all_dbs | jq length); if [ $i -ne 38 ]; then exit 1; fi
 
 before_deploy:
+  - dir1=$(pwd)
   - CONFIG_FILE="./installer/BeLL-Apps-Installer.iss"
   - TARGET_KEY="OutputBaseFilename"
   - BASE_NAME="-setup"
@@ -78,6 +79,7 @@ before_deploy:
   - innoextract is.exe
   - mkdir -p ~/".wine/drive_c/inno"
   - cp -a app/* ~/".wine/drive_c/inno"
+  - cd $dir1
   - ls ~/".wine/drive_c/inno"
   - ls ./installer/
   - wine "C:\inno\ISCC.exe" $CONFIG_FILE
