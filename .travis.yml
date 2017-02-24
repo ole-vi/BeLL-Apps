@@ -84,7 +84,7 @@ before_deploy:
   - ls ./installer/
   - wine "C:\inno\ISCC.exe" $CONFIG_FILE
   - ls "./installer" -lah
-  - export RELEASE_PKG_FILE=$(printf '\"./installer/%s.exe\"' "$REPLACEMENT_VALUE")
+  - export RELEASE_PKG_FILE=$(printf './installer/%s.exe' "$REPLACEMENT_VALUE")
   - #export RELEASE_PKG_FILE="./installer/curl.exe"
   - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
 deploy:
