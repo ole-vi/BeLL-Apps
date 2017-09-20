@@ -1,3 +1,9 @@
+:: Portable
+
+:: NOTE: various pauses and echos for debugging purposes,
+:: Keep them commented out for if you're using installer
+::echo %cd%  show current directory for debugging
+::pause
 call :sub >install_log.txt
 exit /b
 
@@ -10,24 +16,25 @@ call "C:\Program Files (x86)\Apache Software Foundation\CouchDB\bin\couchdb.bat"
 
 
 curl -X PUT http://localhost:5984/_config/httpd/bind_address -d "\"0.0.0.0\""
-
+cd ..
 :: delete databases
-FOR /R BeLL-Apps\databases %%F in (*.*) do (
+::%%~nF = file name
+FOR /R %cd%\databases %%F in (*.*) do (
     curl -X DELETE http://localhost:5984/%%~nF
 )
 
 :: create databases
-FOR /R BeLL-Apps\databases %%F in (*.*) do (
+FOR /R %cd%\databases %%F in (*.*) do (
     curl -X PUT http://localhost:5984/%%~nF
 )
 
 :: add language docs
-FOR /R BeLL-Apps\init_docs\languages %%F in (*.*) do (
+FOR /R %cd%\init_docs\languages %%F in (*.*) do (
     curl -d @"%%F" -H "Content-Type: application/json; charset=utf-8" -X POST http://localhost:5984/languages
 )
 
 :: add bare minimal required data to couchdb for launching bell-apps smoothly
-curl -d @"BeLL-Apps\init_docs\ConfigurationsDoc-Community.txt" -H "Content-Type: application/json" -X POST http://localhost:5984/configurations
+curl -d @"%cd%\init_docs\ConfigurationsDoc-Community.txt" -H "Content-Type: application/json" -X POST http://localhost:5984/configurations
 :: curl -d @"BeLL-Apps\init_docs\admin.json" -H "Content-Type: application/json; charset=utf-8" -X POST http://localhost:5984/members
 
 :: delete empty dbs we want to replace with Starter data dbs
@@ -53,30 +60,47 @@ curl -X PUT http://localhost:5984/coursestep
 curl -X PUT http://localhost:5984/groups
 curl -X PUT http://localhost:5984/resources
 
-:: Move specific Dosign Docs from Databases to anywhere else
-move BeLL-Apps\databases\communities.js BeLL-Apps\communities.js
-move BeLL-Apps\databases\languages.js BeLL-Apps\languages.js
-move BeLL-Apps\databases\configurations.js BeLL-Apps\configurations.js
+::echo %cd% is the current directory
+::pause
+:: Move specific Dosign Docs from BeLL-Apps\databases to BeLL-Apps\
+move %cd%\databases\communities.js %cd%\communities.js
+move %cd%\databases\languages.js %cd%\languages.js
+move %cd%\databases\configurations.js %cd%\configurations.js
 
+:: Env variables , makes sure npm command  isuseable 
 SET PATH=%PATH%;C:\Users\%USERNAME%\AppData\Roaming\npm;C:\Program Files\nodejs
+::pause
+::cd BeLL-Apps
 
-cd BeLL-Apps
+::echo %cd% 
+
 call npm install
-cd ..
+::cd ..
 
-:: add design docs to all databases
-FOR /R BeLL-Apps\databases %%F in (*.*) do (
-call BeLL-Apps\node_modules\.bin\couchapp push BeLL-Apps\databases\%%~nxF http://localhost:5984/%%~nF
+
+:: push syntax:     
+:: push %1 %2
+:: %1 = push from here, %2 = push to here
+::%%nxF =specific files in databases
+:: %1 = <current directory>\"whatever is in quotes"
+
+:: push adds design docs to all databases
+FOR /R %cd%\databases %%F in (*.*) do (
+call "%cd%\node_modules\.bin\couchapp" push "databases\%%~nxF" http://localhost:5984/%%~nF
 timeout 1
 )
 
+echo %cd%
+
 :: Move specific Dosign Docs back to databases
-move BeLL-Apps\communities.js BeLL-Apps\databases\communities.js
-move BeLL-Apps\languages.js BeLL-Apps\databases\languages.js
-move BeLL-Apps\configurations.js BeLL-Apps\databases\configurations.js
+move %cd%\communities.js %cd%\databases\communities.js
+move %cd%\languages.js %cd%\databases\languages.js
+move %cd%\configurations.js %cd%\databases\configurations.js
 
 
 :: call .\create_desktop_icon.bat
 start firefox http://127.0.0.1:5984/apps/_design/bell/MyApp/index.html#admin/add
 
-echo Finished.
+
+echo Finished. 
+::pause
